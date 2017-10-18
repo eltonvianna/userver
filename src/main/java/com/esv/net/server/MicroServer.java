@@ -8,10 +8,9 @@ import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.esv.utile.utils.ConfigurationUtils;
+import com.esv.utile.logging.Logger;
+import com.esv.utile.utils.PropertiesUtils;
 
 /**
  * 
@@ -21,7 +20,7 @@ import com.esv.utile.utils.ConfigurationUtils;
  */
 public class MicroServer {
 
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(MicroServer.class);
 
     private static final int serverPort;
     private static final Executor threadPool;
@@ -31,14 +30,12 @@ public class MicroServer {
     static {
         startTime = System.currentTimeMillis();
         try {
-            serverPort = ConfigurationUtils.getIntProperty("microserver.port", 80);
-            final Integer maxThreads = ConfigurationUtils.getIntProperty("microserver.max.threads", 100);
+            serverPort = PropertiesUtils.getIntProperty("microserver.port", 80);
+            final Integer maxThreads = PropertiesUtils.getIntProperty("microserver.max.threads", 100);
             threadPool = Executors.newFixedThreadPool(maxThreads);
             LOGGER.info(() -> "Starting micro server at port: " + serverPort + ", max threads: " + maxThreads);
         } catch (Exception e) {
-            if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(Level.SEVERE, "Unexpected error on initialization", e);
-            }
+            LOGGER.fatal("Unexpected error on initialization", e);
             throw new ExceptionInInitializerError(e);
         }
     }

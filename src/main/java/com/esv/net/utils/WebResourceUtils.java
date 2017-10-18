@@ -10,12 +10,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import com.esv.net.HttpRequest;
+import com.esv.utile.logging.Logger;
 import com.esv.utile.utils.CharSequenceUtils;
-import com.esv.utile.utils.ConfigurationUtils;
 import com.esv.utile.utils.ObjectUtils;
+import com.esv.utile.utils.PropertiesUtils;
 import com.esv.utile.utils.ResourceUtils;
 
 /**
@@ -25,7 +25,7 @@ import com.esv.utile.utils.ResourceUtils;
  */
 public final class WebResourceUtils {
     
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(WebResourceUtils.class);
     
     private static final Map<String, String> webResourcesMap = new ConcurrentHashMap<>();
     private static final String defaultPage;
@@ -35,11 +35,11 @@ public final class WebResourceUtils {
      */
     static {
         try {
-            final String directoryName = ConfigurationUtils.getStringProperty("resources.dir", "htdocs");
+            final String directoryName = PropertiesUtils.getStringProperty("resources.dir", "htdocs");
             final String webResourcesDir = "/".equals(directoryName) ? "htdocs" : directoryName;
-            final String defaultPageName = ConfigurationUtils.getStringProperty("default.page", "main.html");
+            final String defaultPageName = PropertiesUtils.getStringProperty("default.page", "main.html");
             defaultPage = ResourceUtils.normalize(webResourcesDir + "/" + defaultPageName);
-            LOGGER.finest(() -> "Default web page: " + defaultPage);
+            LOGGER.debug(() -> "Default web page: " + defaultPage);
             WebResourceUtils.scanWebResources(ResourceUtils.normalize(webResourcesDir));
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
@@ -47,31 +47,32 @@ public final class WebResourceUtils {
     }
 
     /**
+     * Suppressing default constructor for non instantiability
+     */
+    private WebResourceUtils() {
+        throw new AssertionError("Suppress default constructor for non instantiability");
+    }
+    
+    /**
      * @throws IOException
      * @throws URISyntaxException
      */
     private static void scanWebResources(final String webResourcesDir) throws IOException, URISyntaxException {
         // list all files of web resource directory
         final List<Path> resources = ResourceUtils.list(webResourcesDir);
+        LOGGER.trace(() -> "Resources found: " + resources);
         for (final Path resource : resources) {
-            final String name = resource.toString();
+            final String name = ResourceUtils.normalize(resource.toString());
             final int idx = name.indexOf(webResourcesDir);
             if (idx > -1) {
                 // resourceName key must match with request.getPathInfo()
                 final String resourceName = name.substring(idx + webResourcesDir.length());
-                final String resourcePath = webResourcesDir + resourceName;
+                final String resourcePath = (webResourcesDir + resourceName);
                 webResourcesMap.put(resourceName, resourcePath);
-                LOGGER.finest(() -> "Added resource name: " + resourceName + ", resource path: " + resourcePath);
+                LOGGER.debug(() -> "Added resource name: " + resourceName + ", resource path: " + resourcePath);
             }
         }
-        LOGGER.fine(() -> "Resources dir: "+ webResourcesDir + ", default page: " + defaultPage + ", resource set: " + webResourcesMap.keySet());
-    }
-    
-    /**
-     * Suppressing default constructor for non instantiability
-     */
-    private WebResourceUtils() {
-        throw new AssertionError("Suppress default constructor for non instantiability");
+        LOGGER.debug(() -> "Resources dir: "+ webResourcesDir + ", default page: " + defaultPage + ", resource set: " + webResourcesMap.keySet());
     }
     
     /**

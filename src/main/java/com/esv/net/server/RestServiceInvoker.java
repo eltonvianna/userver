@@ -11,15 +11,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import com.esv.net.HttpRequest;
 import com.esv.net.rest.Get;
 import com.esv.net.rest.RestService;
+import com.esv.utile.logging.Logger;
 import com.esv.utile.utils.CharSequenceUtils;
-import com.esv.utile.utils.ConfigurationUtils;
 import com.esv.utile.utils.JsonUtils;
 import com.esv.utile.utils.ObjectUtils;
+import com.esv.utile.utils.PropertiesUtils;
 import com.esv.utile.utils.ResourceUtils;
 
 /**
@@ -29,7 +29,7 @@ import com.esv.utile.utils.ResourceUtils;
  */
 final class RestServiceInvoker {
     
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(RestServiceInvoker.class);
 
     private static final Set<String> uriMappings = new HashSet<>();
     private static final Map<String, Method> getMappings = new ConcurrentHashMap<>();
@@ -54,17 +54,17 @@ final class RestServiceInvoker {
      * @throws Exception
      */
     private static void scanServices() throws Exception {
-        final String testOutputDir = ConfigurationUtils.getStringProperty("test.output.dir", "test-classes");
+        final String testOutputDir = PropertiesUtils.getStringProperty("test.output.dir", "test-classes");
         final boolean testContext = ResourceUtils.endsWith(".", testOutputDir);
         final List<String> classes = ResourceUtils.listClasses(true == testContext ? System.getProperty("java.class.path") : ".");
         for (final String className : classes) {
             try {
                 final Class<?> clazz = Class.forName(className);
                 if (clazz.isAnnotationPresent(RestService.class)) {
-                    LOGGER.fine(() -> "Found RestService annotation at class: " + className);
+                    LOGGER.debug(() -> "Found RestService annotation at class: " + className);
                     final RestService restService = clazz.getAnnotation(RestService.class);
                     if (true == restService.singleton()) {
-                        LOGGER.fine(() -> "Creating a singleton instance of: " + className);
+                        LOGGER.debug(() -> "Creating a singleton instance of: " + className);
                         if (false == singletons.containsKey(clazz)) {
                             singletons.put(clazz, ObjectUtils.newInstance(clazz));
                         }
@@ -72,7 +72,7 @@ final class RestServiceInvoker {
                     scanEndpoints(className, clazz);
                 }
             } catch (Exception e) {
-                LOGGER.finest(() -> e.getMessage());
+                LOGGER.debug(() -> e.getMessage()).trace("Stack trace:", e);
             }
         }
     }
@@ -95,13 +95,13 @@ final class RestServiceInvoker {
     private static void addGetEndpoint(final Method method) {
         final Get get = method.getAnnotation(Get.class);
         final String currMethodName = ObjectUtils.canonicalMethotName(method);
-        LOGGER.fine(() -> "Found Get(\"" + get.value() + "\") annotation at: " + currMethodName);
+        LOGGER.debug(() -> "Found Get(\"" + get.value() + "\") annotation at: " + currMethodName);
         final String uri = get.value().trim();
         if (getMappings.containsKey(uri)) {
             final Method m = getMappings.get(uri);
             final String prevMethodName = ObjectUtils.canonicalMethotName(m);
             final String message = "Duplicate Get(\"" + uri + "\") annotation at: " + prevMethodName + " and " + currMethodName;
-            LOGGER.severe(() -> message);
+            LOGGER.fatal(() -> message);
             throw new UnsupportedOperationException(message);
         }
         getMappings.put(uri, method);
@@ -139,7 +139,7 @@ final class RestServiceInvoker {
         ObjectUtils.requireNotNull(method, "method parameter is null");
         final Class<?> clazz = method.getDeclaringClass();
         final Object result = method.invoke(Optional.ofNullable(singletons.get(clazz)).orElse(ObjectUtils.newInstance(clazz)));
-        LOGGER.finest(() -> "Object returned: " + result);
+        LOGGER.trace(() -> "Object returned: " + result);
         return result;
     }
 }

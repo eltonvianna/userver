@@ -6,15 +6,14 @@ package com.esv.net.server;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.esv.net.HttpRequest;
 import com.esv.net.HttpRequestHandler;
 import com.esv.net.HttpResponse;
 import com.esv.net.utils.MimeTypeUtils;
-import com.esv.utile.utils.ConfigurationUtils;
+import com.esv.utile.logging.Logger;
 import com.esv.utile.utils.ObjectUtils;
+import com.esv.utile.utils.PropertiesUtils;
 
 /**
  * @author Elton S. Vianna <elton.vianna@yahoo.co.uk>
@@ -23,7 +22,7 @@ import com.esv.utile.utils.ObjectUtils;
  */
 final class SocketHandler {
 
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(SocketHandler.class);
     private static final List<HttpRequestHandler> httpRequestHandlers;
 
     /**
@@ -35,10 +34,11 @@ final class SocketHandler {
      */
     static {
         try {
-            final String[] handlers = ConfigurationUtils.getRequiredProperty("request.handlers").split(",");
+            final String[] handlers = PropertiesUtils.getRequiredProperty("request.handlers").split(",");
             httpRequestHandlers = ObjectUtils.newInstances(handlers);
-            LOGGER.fine(() -> "Successfully load the request handlers: " + httpRequestHandlers);
+            LOGGER.debug(() -> "Successfully load the request handlers: " + httpRequestHandlers);
         } catch (Exception e) {
+            //TODO logger fatal
             throw new ExceptionInInitializerError(e);
         }
     }
@@ -82,12 +82,12 @@ final class SocketHandler {
         try (final OutputStream outputStream = socket.getOutputStream()) {
             // creating a new request object
             final HttpRequest httpRequest = HttpRequest.newInstance(socket);
-            LOGGER.finest(() -> "HttpRequest content: " + httpRequest);
+            LOGGER.trace(() -> "HttpRequest content: " + httpRequest);
             // check if is an allowed request method
             final String requestMethod = httpRequest.getRequestMethod();
             if (SocketHandler.isNotAllowedMethod(requestMethod)) {
                 final String message = "Method Not Allowed: " + requestMethod;
-                LOGGER.severe(() -> message);
+                LOGGER.error(message);
                 HttpResponse.notAllowed(message, MimeTypeUtils.TEXT_PLAIN, message);
                 return;
             }
@@ -97,15 +97,11 @@ final class SocketHandler {
                 }
             } catch (Exception e) {
                 final String message = "Internal Server Error";
-                if (LOGGER.isLoggable(Level.SEVERE)) {
-                    LOGGER.log(Level.SEVERE, message, e);
-                }
+                LOGGER.fatal(message, e);
                 HttpResponse.serverError(message, MimeTypeUtils.TEXT_PLAIN, message);
             }
         } catch (Throwable t) {
-            if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(Level.SEVERE, "Unexpected error. Could not send a response. Please try again later", t);
-            }
+                LOGGER.fatal("Unexpected error. Could not send a response. Please try again later", t);
             return;
         }
     }
