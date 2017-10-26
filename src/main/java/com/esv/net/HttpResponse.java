@@ -7,9 +7,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.logging.Logger;
 
 import com.esv.net.utils.MimeTypeUtils;
+import com.esv.utile.logging.Logger;
 import com.esv.utile.utils.IOUtils;
 
 /**
@@ -19,7 +19,7 @@ import com.esv.utile.utils.IOUtils;
  */
 public class HttpResponse {
 
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(HttpResponse.class);
     
     /**
      * @param data
@@ -71,7 +71,7 @@ public class HttpResponse {
         out.println("Content-length: " + data.length());
         out.println("");
         out.println(data);
-        LOGGER.finest(() -> "Write data: " + data + ", Status code: " + responseCode + ", Content-type: " + contentType
+        LOGGER.trace(() -> "Write data: " + data + ", Status code: " + responseCode + ", Content-type: " + contentType
                 + ", Content-length: " + data.length());
     }
     
@@ -103,7 +103,7 @@ public class HttpResponse {
         out.writeBytes("\n");
         out.write(data);
         out.flush();
-        LOGGER.finest(() -> "Write data: " + resourceName + ", Status code: 200, Content-type: " + contentType
+        LOGGER.trace(() -> "Write data: " + resourceName + ", Status code: 200, Content-type: " + contentType
                 + ", Content-length: " + data.length + ", Cache-Control: max-age=" + cacheControl);
     }
 

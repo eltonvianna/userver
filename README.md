@@ -51,18 +51,36 @@ request.handlers=com.esv.net.server.ResourceRequestHandler,com.esv.net.server.Re
 # Client http cache max age
 cache.maxAge=604800
 
-# File Logging
-java.util.logging.FileHandler.pattern = /logs/application.log
-java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
-java.util.logging.FileHandler.level = FINE
+# The global logger (optional. Default: com.esv.utile.logging.core.logger.AsyncLogger)
+#logging.logger=com.esv.utile.logging.core.logger.AsyncLogger
 
-# Console Logging
-java.util.logging.ConsoleHandler.level = FINE
+# The log file name (optional. Default: logging.log)
+#logging.fileName=logging.log
+
+# The rollover period. *IN SECONDS* (optional. Default: 3600s = 60 mins). The mininal rollver time is 5s.
+#logging.rolloverPeriod=3600
+
+# Enable compression after the log file rollover (optional. Default: true) 
+#logging.rolloverGzipEnabled=true
+
+# The timestamp sufix pattern after log rollover (optional. Default: yyyyMMddHHmmss)
+#logging.timestampPattern=yyyyMMddHHmmss
+
+# The global logging level (optional. Default: INFO).
+logging.level=ALL
+
+# The date pattern (optional. Default: yyyy-MM-dd'T'HH:mm:ss.SSSZ)
+#logging.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSSZ
+
+# The log appenders (optional. Default: com.esv.utile.logging.core.appender.RollingLogAppender) See also: com.esv.utile.logging.core.appender.ConsoleLogAppender
+#logging.appenders=com.esv.utile.logging.core.appender.RollingLogAppender
+
+# The time waiting to consume the enqueued LogEvents. *IN MILLISECONDS* (optional. Default value: 100). The minimal time wait value is 100ms
+#logging.async.logEventTimeWait=100
+
+# The log layout (optional. Default: com.esv.utile.logging.core.StaticLogLayout)
+#logging.logLayout=com.esv.utile.logging.core.StaticLogLayout
 ````
-
-### Logging configuration
-
-The current Java logging configuration is file based, editing the file application.properties you can change log level, add appenders, etc.
 
 ### Unexpected errors
 
