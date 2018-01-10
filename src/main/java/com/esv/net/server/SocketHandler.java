@@ -38,7 +38,6 @@ final class SocketHandler {
             httpRequestHandlers = ObjectUtils.newInstances(handlers);
             LOGGER.debug(() -> "Successfully load the request handlers: " + httpRequestHandlers);
         } catch (Exception e) {
-            //TODO logger fatal
             throw new ExceptionInInitializerError(e);
         }
     }

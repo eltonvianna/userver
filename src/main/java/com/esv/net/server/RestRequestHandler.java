@@ -47,7 +47,7 @@ public class RestRequestHandler implements HttpRequestHandler {
                 }
             } else {
                 final String message = "Invalid endpoint: " + httpRequest.getPathInfo();
-                LOGGER.warn(() -> message);
+                LOGGER.warn(message);
                 json = JsonUtils.createBuilder("message", message).build();
             }
             //
