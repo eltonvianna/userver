@@ -49,10 +49,10 @@ public class MicroServer {
      * @param args
      * @throws RuntimeException
      */
-    public static void run(String... args) {
-        MicroServer.started.set(true);
+    public synchronized static void run(String... args) {
         try (final ServerSocket serverSocket = new ServerSocket(MicroServer.serverPort)) {
-            LOGGER.info(() -> "Micro server successfully started in " + (System.currentTimeMillis() - startTime) + " milliseconds");
+            MicroServer.started.set(serverSocket.isBound());
+        	LOGGER.info(() -> "Micro server successfully started in " + (System.currentTimeMillis() - startTime) + " milliseconds");
             while (MicroServer.isStarted()) {
                 final Socket socket = serverSocket.accept();
                 MicroServer.threadPool.execute(() -> SocketHandler.handle(socket));
