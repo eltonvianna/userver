@@ -33,7 +33,7 @@ public class MicroServer {
             serverPort = PropertiesUtils.getIntProperty("microserver.port", 80);
             final Integer maxThreads = PropertiesUtils.getIntProperty("microserver.max.threads", 100);
             threadPool = Executors.newFixedThreadPool(maxThreads);
-            LOGGER.info(() -> "Starting micro server at port: " + serverPort + ", max threads: " + maxThreads);
+            LOGGER.info(() -> "Listening at port: " + serverPort + ", max threads: " + maxThreads);
         } catch (Exception e) {
             LOGGER.fatal("Unexpected error on initialization", e);
             throw new ExceptionInInitializerError(e);
@@ -52,7 +52,7 @@ public class MicroServer {
     public synchronized static void run(String... args) {
         try (final ServerSocket serverSocket = new ServerSocket(MicroServer.serverPort)) {
             MicroServer.started.set(serverSocket.isBound());
-        	LOGGER.info(() -> "Micro server successfully started in " + (System.currentTimeMillis() - startTime) + " milliseconds");
+        	LOGGER.info(() -> "Started in " + (System.currentTimeMillis() - startTime) + " milliseconds").debug(() -> "Thread pool: " + threadPool);
             while (MicroServer.isStarted()) {
                 final Socket socket = serverSocket.accept();
                 MicroServer.threadPool.execute(() -> SocketHandler.handle(socket));
