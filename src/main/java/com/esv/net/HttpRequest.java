@@ -50,6 +50,8 @@ public final class HttpRequest {
         try {
             final BufferedReader reader = IOUtils.toBufferedReader(socket.getInputStream());
             this.requestLine = reader.readLine();
+            if (null != requestLine) {
+            }
             final StringTokenizer tokenizedLine = new StringTokenizer(requestLine);
             this.requestMethod = tokenizedLine.nextToken();
             this.requestURI = tokenizedLine.nextToken();
