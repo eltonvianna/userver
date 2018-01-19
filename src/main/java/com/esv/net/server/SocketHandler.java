@@ -96,11 +96,11 @@ final class SocketHandler {
                 }
             } catch (Exception e) {
                 final String message = "Internal Server Error";
-                LOGGER.fatal(message, e);
+                LOGGER.error(message, e);
                 HttpResponse.serverError(message, MimeTypeUtils.TEXT_PLAIN, message);
             }
         } catch (Throwable t) {
-                LOGGER.fatal("Unexpected error. Could not send a response. Please try again later", t);
+                LOGGER.error("Unexpected error. Could not send a response. Please try again later", t);
             return;
         }
     }
